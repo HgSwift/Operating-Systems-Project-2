@@ -25,6 +25,10 @@ void RDM(char* filename, int frame_size, char* mode);
 */
 void FIFO(char* filename, int frame_size, char* mode);
 
+/*
+    Second chance page replacement algorithm
+*/
+void VMS(char* filename, int frame_size, char* mode);
 
 int main(int argc, char* argv[]){
     // check to make sure proper amount of arguments were provided to the program
@@ -52,7 +56,7 @@ int main(int argc, char* argv[]){
         FIFO(argv[1], frames, argv[4]);
         exit(0);
     }else if(strcmp(argv[3], "vms") == 0){
-        printf("Test success vms");
+        VMS(argv[1], frames, argv[4]);
         exit(0);
     }
     return 0;
@@ -61,6 +65,7 @@ int main(int argc, char* argv[]){
 void RDM(char* filename, int frame_size, char* mode){
    
     srand(time(0));
+    // because of this VLA, our code must be compiled in C99 or C11 (which support VLAs)
     Page frames[frame_size];
 
     // initialize the pages to some null values
@@ -96,7 +101,7 @@ void RDM(char* filename, int frame_size, char* mode){
 
             for(int i = 0; i < frame_size; i++){
                 // if we find the relevant page, continue
-                // and set previous page to the index we found it at
+                // and set previous_page to the index we found it at
                 // this is to take advantage of principle of locality
                 // to avoid iterating through the entire array for multiple
                 // reads of the same page
@@ -200,9 +205,6 @@ void FIFO(char* filename, int frame_size, char* mode){
     FILE* file = fopen(filename, "r");
     bool found;
 
-    // BEGIN HERE TOMORROW
-
-
      while(fscanf(file,"%x %c",&addr,&rw) != EOF){
         if(strcmp(mode, "debug") == 0){
             printf("Performing Event: %d, %c, %d\n", events, rw, addr);
@@ -289,4 +291,33 @@ void FIFO(char* filename, int frame_size, char* mode){
     printf("Events in trace: %d\n", events);
     printf("Total disk reads: %d\n", reads);
     printf("Total disk writes: %d\n", writes);
+}
+
+void VMS(char* filename, int frame_size, char* mode){
+    /*
+        LEAVING THIS CODE IN BECAUSE IT WILL BE USED IN THE FUTURE
+        BUT EARLIER FUNCTIONS NEED TO BE FIXED
+    */
+    unsigned addr;
+    char saddr[9];
+    char rw;
+    int reads = 0, writes = 0, events = 0;
+    FILE* file = fopen(filename, "r");
+    bool found;
+
+     while(fscanf(file,"%s %c",&saddr,&rw) != EOF){
+        if(strcmp(mode, "debug") == 0){
+            printf("Performing Event: %d, %c, %s\n", events, rw, saddr);
+        }
+
+        sscanf(saddr, "%x", &addr);
+
+        if(saddr[0] == '3'){
+            printf("This is process 1\n");
+            // process 1 code here
+        }else{
+            printf("This is process 2\n");
+            // process 2 code here
+        }
+    }
 }
