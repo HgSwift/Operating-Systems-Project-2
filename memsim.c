@@ -43,8 +43,6 @@ int main(int argc, char* argv[]){
     // for(int i = 0; i<5; i++){
     //     printf("%s\n", argv[i]);
     // }
-
-
    
     if(strcmp(argv[3], "rdm") == 0){
         RDM(argv[1], frames, argv[4]);
@@ -86,7 +84,7 @@ void RDM(char* filename, int frame_size, char* mode){
         }
 
 
-        
+        addr /= 4096;
         found = false;
         // immediately increment the events variable if we find another trace to read
         events++;
@@ -209,7 +207,7 @@ void FIFO(char* filename, int frame_size, char* mode){
         if(strcmp(mode, "debug") == 0){
             printf("Performing Event: %d, %c, %d\n", events, rw, addr);
         }
-
+        addr /= 4096;
         found = false;
         // immediately increment the events variable if we find another trace to read
         events++;
@@ -286,6 +284,17 @@ void FIFO(char* filename, int frame_size, char* mode){
             }
         }
     }
+
+    // Free up memory
+    nPage* current = head;
+    for(int i = 0; i<frame_size; i++){
+                current = head->next;
+                free(head);
+                
+                head = current;
+            }
+
+
     fclose(file);
     printf("Total memory frames: %d\n", frame_size);
     printf("Events in trace: %d\n", events);
